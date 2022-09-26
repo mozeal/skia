@@ -11,10 +11,11 @@
 #   pacman -S mingw-w64-i686-SDL2
 #
 
-#CXX = g++
+CXX = g++
 #CXX = clang++
+CC = cc
 
-EXE = HelloWorldApp
+EXE = skia-cpp-example
 OPTIONS = 
 
 UNAME_S := $(shell uname -s)
@@ -24,7 +25,7 @@ OBJ_DIR = obj
 
 LIB_DIR = lib
 
-ROOT_DIR = ../../..
+ROOT_DIR = ../..
 
 LIBS_DIR = 
 OUT_DIR = $(ROOT_DIR)/out
@@ -35,13 +36,13 @@ EXTERNALS_DIR = $(THIRDPARTY_DIR)/externals
 SKIA_DIR = $(ROOT_DIR)
 
 APPS_DIR = ../..
-APP_ROOT_DIR = ..
+APP_ROOT_DIR = .
 APP_SRC_DIR = $(APP_ROOT_DIR)/src
 
 GLAD_DIR = $(ROOT_DIR)/apps/glad
 
 SOURCES = \
-	$(APP_SRC_DIR)/HelloWorld.cpp
+	$(APP_SRC_DIR)/skia-cpp-example.cpp
 
 CXXFLAGS += -Wall -Wformat -Wattributes \
           -I$(APP_ROOT_DIR) -I$(APP_SRC_DIR) -I$(SRC_DIR) -I$(ROOT_DIR)/src -I$(APPS_DIR) 
@@ -55,32 +56,6 @@ ARM = armv6
 
 LIBS = 
 
-##---------------------------------------------------------------------
-## glad
-##---------------------------------------------------------------------
-#Using OpenGL loader: GLAD2
-#LOADER_GLAD=OPENGL_LOADER_GLAD
-
-#LOADER_GLAD=OPENGLES2_LOADER_GLAD
-#
-#CXXFLAGS += -I$(GLAD_DIR)/include
-#
-#ifeq ($(LOADER_GLAD), OPENGL_LOADER_GLAD)
-#	# 1. glad gl
-#	CXXFLAGS += -DOPENGL_LOADER_GLAD=1
-#	SOURCES += $(GLAD_DIR)src/gl.c
-#endif
-#
-#ifeq ($(LOADER_GLAD), OPENGLES2_LOADER_GLAD)
-#	# 2. glad egl, gles2
-#	CXXFLAGS += -DOPENGLES2_LOADER_GLAD=1
-#	SOURCES += $(GLAD_DIR)/src/egl.c 
-#	SOURCES += $(GLAD_DIR)/src/gles2.c
-#endif
-#
-##---------------------------------------------------------------------
-## SDL
-##---------------------------------------------------------------------
 
 CXXFLAGS += -D__USE_SDL__=1 
 
@@ -90,12 +65,10 @@ CXXFLAGS += -D__USE_SDL__=1
 
 CXXFLAGS += -I$(SKIA_DIR) -DSK_GL -DGR_GL_CHECK_ERROR=0 -DGR_GL_LOG_CALLS=0 -D__USE_SKIA__=1
 LIBS += -lskia -lskshaper -lskunicode -lskresources
-#  -limgui -lsksg -lpathkit
 
 ##---------------------------------------------------------------------
 
 OBJS = $(addsuffix .o, $(addprefix $(OBJ_DIR)/, $(basename $(notdir $(SOURCES)))))
-
 
 ##---------------------------------------------------------------------
 ## BUILD FLAGS PER PLATFORM
@@ -107,25 +80,9 @@ ifeq ($(UNAME_M), x86_64)
 	CPU = x64
 	PLATFORM = linux
 	LIBS += -L$(ROOT_DIR)/out/linux-debug 
-# -lEGL
 else
 	ifeq ($(UNAME_M), aarch64)
-		CPU = arm64
-		# ----------------------- Wayland ----------------------------
-		LIBS += -L/usr/lib/aarch64-linux-gnu/vivante 
-			
-		#GBM
-		CXXFLAGS += $(shell pkg-config --cflags gbm)
-		LIBS += $(shell pkg-config --libs gbm)
-	
-		#EGL_WAYLAND (-DWL_EGL_PLATFORM => glad/egl.h)
-		CXXFLAGS += $(shell pkg-config --cflags egl_wayland)
-		LIBS += $(shell pkg-config --libs egl_wayland)
-		
-		#GLESv2_wl :
-		CXXFLAGS += $(shell pkg-config --cflags glesv2_wl)
-		LIBS += $(shell pkg-config --libs glesv2_wl)
-		# --------------------------------------------------------------		
+		CPU = arm64	
 	else ifeq ($(UNAME_M), armv7l)
 		CPU = armv7
 	else
@@ -144,39 +101,6 @@ endif
 	CFLAGS = $(CXXFLAGS)
 endif
 
-ifeq ($(UNAME_S), Darwin) #APPLE
-	ECHO_MESSAGE = "Mac OS X"
-	PLATFORM = macos
-	ifeq ($(UNAME_M), x86_64)
-		CPU = x64
-	else
-		CPU = arm64
-	endif
-
-	LIBS += -framework Metal -framework MetalKit -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo -framework Carbon
-	LIBS += -framework AudioToolbox -framework CoreAudio -framework CoreFoundation -framework CoreHaptics -framework ForceFeedback
-	LIBS += -framework GameController -framework QuartzCore -liconv -lexpat 
-	LIBS += -L$(LIBS_DIR)/$(PLATFORM)/$(CPU)/release
-	LIBS += -lSDL2 
-
-	CXXFLAGS += -I/usr/local/include -I/opt/local/include
-	CXXFLAGS += -fvisibility=hidden
-	CFLAGS = $(CXXFLAGS)
-endif
-
-ifeq ($(findstring MINGW,$(UNAME_S)),MINGW)
-	ECHO_MESSAGE = "MinGW"
-	PLATFORM = windows
-	
-	LIBS += -lgdi32 -lopengl32 -limm32 
-	LIBS += -L$(LIBS_DIR)/$(PLATFORM)/x64/release
-	LIBS += `sdl2-config --libs` 
-
-	CXXFLAGS += `sdl2-config --cflags` -D_THREAD_SAFE
-	
-	CFLAGS = $(CXXFLAGS)
-endif
-
 ##---------------------------------------------------------------------
 ## BUILD RULES for App
 ##---------------------------------------------------------------------
@@ -184,7 +108,11 @@ endif
 $(OBJ_DIR)/%.o:$(APP_SRC_DIR)/%.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<	
-	
+
+$(OBJ_DIR)/%.o:$(APP_SRC_DIR)/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CXXFLAGS) $(CLAGS) -c -o $@ $<	
+
 $(OBJ_DIR)/%.o:$(GLAD_DIR)/src/%.c
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<	
 
@@ -218,6 +146,7 @@ $(EXE): $(OBJS)
 
 clean:
 	rm -f $(EXE) $(OBJS) 
+	rm -f *.png
 
 reset:
 	rm ./imgui.ini
