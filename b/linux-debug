@@ -1,0 +1,10 @@
+#!/bin/bash
+echo ""
+bin/gn gen out/linux-debug --args='skia_use_gl=true target_os="linux" cc="clang" cxx="clang++"'
+echo ""
+echo "Build cmd:"
+echo "ninja -C out/linux-debug HelloWorld"
+echo ""
+echo "Run Test:"
+echo "out/linux-debug/HelloWorld"
+echo ""

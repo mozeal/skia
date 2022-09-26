@@ -1,0 +1,7 @@
+#!/bin/bash
+echo ""
+bin/gn gen out/linux-release --args='is_debug=false is_official_build=false skia_use_gl=true target_os="linux" cc="clang" cxx="clang++"'
+echo ""
+echo "Build cmd:"
+echo "ninja -C out/linux-release"
+echo ""
