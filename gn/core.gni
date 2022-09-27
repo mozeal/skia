@@ -100,6 +100,7 @@ skia_core_public = [
 ]
 
 skia_core_sources = [
+  "$_src/c/sk_api.cpp",
   "$_src/c/sk_imageinfo.cpp",
   "$_src/c/sk_paint.cpp",
   "$_src/c/sk_surface.cpp",

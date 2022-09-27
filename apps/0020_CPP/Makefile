@@ -154,3 +154,5 @@ reset:
 resources:
 	ln -s ../../../resources .
 
+run:
+	./skia-cpp-example

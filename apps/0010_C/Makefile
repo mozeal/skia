@@ -146,6 +146,7 @@ $(EXE): $(OBJS)
 
 clean:
 	rm -f $(EXE) $(OBJS) 
+	rm ./skia-c-example.png
 
 reset:
 	rm ./imgui.ini
@@ -153,3 +154,5 @@ reset:
 resources:
 	ln -s ../../../resources .
 
+run:
+	./skia-c-example

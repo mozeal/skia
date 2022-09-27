@@ -16,9 +16,8 @@
 #include "include/core/SkSurface.h"
 #include "include/core/SkEncodedImageFormat.h"
 #include "include/core/SkStream.h"
+#include "include/c/sk_api.h"
 
-SkSurface * createSurface( int w, int h );
-SkData * makeSnapshot( SkSurface *srf );
 
 void draw( SkCanvas *canvas ) {
     SkPaint paintFill;
